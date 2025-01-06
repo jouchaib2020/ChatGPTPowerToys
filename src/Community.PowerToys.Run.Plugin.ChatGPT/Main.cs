@@ -75,26 +75,32 @@ namespace Community.PowerToys.Run.Plugin.ChatGPT
             {
                 string searchTerm = query.Search;
 
+
+                string arguments = $"https://chatgpt.com/?q={HttpUtility.UrlEncode(searchTerm)}&temporary-chat=true";
+
+                if(searchTerm.Contains("-p"))
+                {
+                    searchTerm = searchTerm.replace("-p", "").Trim();
+                    arguments = $"https://chatgpt.com/?q={HttpUtility.UrlEncode(searchTerm)}";
+                }
+
                 var result = new Result
                 {
                     Title = searchTerm,
                     SubTitle = string.Format(CultureInfo.CurrentCulture, Open, BrowserInfo.Name ?? BrowserInfo.MSEdgeName),
                     QueryTextDisplay = searchTerm,
                     IcoPath = _iconPath,
-                };
-
-                string arguments = $"https://chatgpt.com/?q={HttpUtility.UrlEncode(searchTerm)}";
-
-                result.ProgramArguments = arguments;
-                result.Action = action =>
-                {
-                    if (!Helper.OpenCommandInShell(BrowserInfo.Path, BrowserInfo.ArgumentsPattern, arguments))
+                    ProgramArguments = arguments,
+                    Action = action =>
                     {
-                        onPluginError();
-                        return false;
-                    }
+                        if (!Helper.OpenCommandInShell(BrowserInfo.Path, BrowserInfo.ArgumentsPattern, arguments))
+                        {
+                            onPluginError();
+                            return false;
+                        }
 
-                    return true;
+                        return true;
+                    }
                 };
 
                 results.Add(result);
